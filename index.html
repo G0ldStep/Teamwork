@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>线代小帮手 · 线性代数练习工具</title>
+<style>
+  :root{
+    --bg:#f0f3f9; --card:#ffffff; --ink:#1e2635; --sub:#66738a;
+    --pri:#3b6fe0; --pri-d:#2c56b0; --pri-soft:#eaf0fd;
+    --ok:#14976a; --bad:#d64545; --line:#e2e7f1;
+    --shadow:0 4px 18px rgba(35,60,110,.07);
+  }
+  body.dark{
+    --bg:#131722; --card:#1c2331; --ink:#e7ecf5; --sub:#93a0b6;
+    --pri:#7aa2ff; --pri-d:#a9c2ff; --pri-soft:#263450;
+    --line:#2c3547; --shadow:0 4px 18px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; transition:.2s;}
+  header{background:linear-gradient(120deg,#2c56b0,#3b6fe0 60%,#5b8bf0); color:#fff; padding:30px 20px 26px; text-align:center; position:relative;}
+  header h1{font-size:26px; letter-spacing:2px;}
+  header p{font-size:13px; opacity:.88; margin-top:6px;}
+  #darkBtn{position:absolute; right:16px; top:16px; background:rgba(255,255,255,.18); border:none; color:#fff; border-radius:20px; padding:6px 14px; cursor:pointer; font-size:13px;}
+  nav{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; background:var(--card); padding:12px; position:sticky; top:0; z-index:10; box-shadow:var(--shadow);}
+  nav button{border:1px solid var(--line); background:transparent; color:var(--ink); padding:7px 15px; border-radius:20px; cursor:pointer; font-size:14px; transition:.15s;}
+  nav button:hover{border-color:var(--pri); color:var(--pri);}
+  nav button.on{background:var(--pri); border-color:var(--pri); color:#fff;}
+  main{max-width:960px; margin:22px auto; padding:0 16px 60px;}
+  section.tab{display:none; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px; box-shadow:var(--shadow); animation:fade .2s;}
+  section.tab.on{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2{font-size:20px; margin-bottom:6px;}
+  .desc{font-size:13px; color:var(--sub); margin-bottom:16px;}
+  h3{font-size:15px; margin:18px 0 8px; color:var(--pri-d);}
+  textarea{width:100%; min-height:90px; font-family:Consolas,monospace; font-size:15px; padding:10px; border:1px solid var(--line); border-radius:10px; resize:vertical; background:var(--bg); color:var(--ink);}
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:10px 0;}
+  select,input[type=text]{padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:var(--card); color:var(--ink);}
+  input[type=number]{width:110px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:var(--card); color:var(--ink);}
+  .btn{background:var(--pri); color:#fff; border:none; padding:9px 20px; border-radius:8px; cursor:pointer; font-size:14px; transition:.15s;}
+  .btn:hover{filter:brightness(1.1);}
+  .btn.ghost{background:transparent; color:var(--pri); border:1px solid var(--pri);}
+  .btn.sm{padding:5px 12px; font-size:13px;}
+  .matrix{display:inline-block; border-left:2px solid var(--ink); border-right:2px solid var(--ink); border-radius:8px; padding:6px 14px; margin:6px 0; font-family:Consolas,monospace; font-size:15px; line-height:1.85; vertical-align:middle;}
+  .matrix td{padding:1px 10px; text-align:right;}
+  .steps{margin-top:10px; counter-reset:st;}
+  .step{padding:10px 14px 10px 16px; border-left:3px solid var(--pri); background:var(--pri-soft); border-radius:0 10px 10px 0; margin-bottom:8px; font-size:14px;}
+  .ok{color:var(--ok); font-weight:bold;}
+  .bad{color:var(--bad); font-weight:bold;}
+  .muted{color:var(--sub); font-size:13px;}
+  .card{border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:16px; background:var(--bg);}
+  .pill{display:inline-block; background:var(--pri-soft); color:var(--pri-d); border-radius:12px; padding:2px 12px; font-size:12px; margin-right:6px;}
+  .wq-item{border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px;}
+  .choose{display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;}
+  .choose label{border:1px solid var(--line); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px;}
+  .choose input{margin-right:6px;}
+  .ans-feed{font-size:14px; margin-top:10px; padding:10px 14px; border-radius:10px; display:none;}
+  .ans-feed.ok{display:block; background:rgba(20,151,106,.12);}
+  .ans-feed.bad{display:block; background:rgba(214,69,69,.12);}
+  .stats{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;}
+  .stat{flex:1; min-width:120px; background:var(--pri-soft); border-radius:12px; padding:14px; text-align:center;}
+  .stat b{display:block; font-size:24px; color:var(--pri-d);}
+  .stat span{font-size:12px; color:var(--sub);}
+  .feats{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:14px;}
+  .feat{border:1px solid var(--line); border-radius:12px; padding:14px; font-size:14px; cursor:pointer; transition:.15s;}
+  .feat:hover{border-color:var(--pri); box-shadow:var(--shadow); transform:translateY(-2px);}
+  .feat b{color:var(--pri-d);}
+</style>
+</head>
+<body>
+<header>
+  <button id="darkBtn" onclick="toggleDark()">🌙 深色模式</button>
+  <h1>线代小帮手</h1>
+  <p>行列式 · 矩阵 · 方程组 · 特征值 —— 算得对，更要看得懂（完全离线可用）</p>
+</header>
+<nav id="nav">
+  <button data-tab="home" class="on">🏠 首页</button>
+  <button data-tab="det">行列式</button>
+  <button data-tab="matop">矩阵运算</button>
+  <button data-tab="solve">方程组</button>
+  <button data-tab="eigen">特征值</button>
+  <button data-tab="rowop">行变换练习</button>
+  <button data-tab="finderr">找错挑战</button>
+  <button data-tab="quiz">随机刷题</button>
+  <button data-tab="wrong">错题本 <span id="wqCount"></span></button>
+</nav>
+<main>
+
+<!-- ============ 首页 ============ -->
+<section class="tab on" id="tab-home">
+  <h2>欢迎使用 👋</h2>
+  <p class="desc">线性代数课程数智实践大作业（选题 C3）· 本工具面向初学者“做题没人对答案、步骤看不懂”的痛点设计，全部功能浏览器本地运行，无需联网。</p>
+  <div class="feats">
+    <div class="feat" data-tab="det"><b>行列式计算</b><br>按行展开完整步骤，精确分数结果。</div>
+    <div class="feat" data-tab="matop"><b>矩阵运算</b><br>加减乘、数乘、转置、逆矩阵、秩、迹。</div>
+    <div class="feat" data-tab="solve"><b>方程组求解</b><br>高斯—若尔当消元全过程，判定解的情况。</div>
+    <div class="feat" data-tab="eigen"><b>特征值（2×2）</b><br>特征多项式推导 + 特征值与特征向量。</div>
+    <div class="feat" data-tab="rowop"><b>行变换练习</b><br>逐步填、逐步判，错在哪个元素都指出。</div>
+    <div class="feat" data-tab="finderr"><b>找错挑战</b><br>从“某同学的解法”里找出藏起来的错误。</div>
+    <div class="feat" data-tab="quiz"><b>随机刷题</b><br>四类题型随机出题，带正确率统计。</div>
+    <div class="feat" data-tab="wrong"><b>错题本</b><br>答错自动本地保存，随时回看重做。</div>
+  </div>
+  <div class="card"><b>使用提示</b><br><span class="muted">矩阵每行一行，数之间用空格或逗号隔开；支持分数（如 1/2、-3/4）。点上方导航切换模块。</span></div>
+</section>
+
+<!-- ============ 行列式 ============ -->
+<section class="tab" id="tab-det">
+  <h2>📐 行列式计算器（附完整展开步骤）</h2>
+  <p class="desc">输入 n×n 矩阵（n ≤ 4），给出最终值和按第一行展开的详细步骤。</p>
+  <textarea id="detInput" placeholder="例如：&#10;2 1 3&#10;0 4 1&#10;1 2 0"></textarea>
+  <div class="row">
+    <button class="btn" onclick="doDet()">计算行列式</button>
+    <button class="btn ghost sm" onclick="fillDetExample()">填个例子</button>
+    <span class="muted" id="detMsg"></span>
+  </div>
+  <div id="detOut"></div>
+</section>
+
+<!-- ============ 矩阵运算 ============ -->
+<section class="tab" id="tab-matop">
+  <h2>🧮 矩阵运算器</h2>
+  <p class="desc">选择运算类型，输入矩阵（二元运算需输入 A 和 B）。逆矩阵用高斯—若尔当法，秩用行最简形计算。</p>
+  <div class="row">
+    <select id="moOp" onchange="moOpChanged()">
+      <option value="add">A + B</option>
+      <option value="sub">A − B</option>
+      <option value="mul">A × B</option>
+      <option value="scal">k × A</option>
+      <option value="trans">A 的转置</option>
+      <option value="inv">A 的逆矩阵</option>
+      <option value="rank">A 的秩</option>
+      <option value="trace">A 的迹</option>
+    </select>
+    <span class="muted" id="moHint"></span>
+  </div>
+  <div id="moKWrap" style="display:none" class="row">k = <input type="text" id="moK" size="8" placeholder="如 2 或 1/3"></div>
+  <h3>矩阵 A</h3>
+  <textarea id="moA" placeholder="例如：&#10;1 2&#10;3 4"></textarea>
+  <div id="moBWrap">
+    <h3>矩阵 B</h3>
+    <textarea id="moB" placeholder="例如：&#10;5 6&#10;7 8"></textarea>
+  </div>
+  <div class="row">
+    <button class="btn" onclick="doMatOp()">计算</button>
+    <span class="muted" id="moMsg"></span>
+  </div>
+  <div id="moOut"></div>
+</section>
+
+<!-- ============ 方程组 ============ -->
+<section class="tab" id="tab-solve">
+  <h2>🔢 线性方程组求解器（高斯消元）</h2>
+  <p class="desc">输入增广矩阵（每行：方程系数 + 右边常数项），自动化到行最简形，判定解的情况并给出解。</p>
+  <textarea id="solveInput" placeholder="例如：&#10;1 2 1 8&#10;2 1 -1 1&#10;1 -1 2 7"></textarea>
+  <div class="row">
+    <button class="btn" onclick="doSolve()">求解</button>
+    <button class="btn ghost sm" onclick="fillSolveExample()">填个例子</button>
+    <span class="muted" id="solveMsg"></span>
+  </div>
+  <div id="solveOut"></div>
+</section>
+
+<!-- ============ 特征值 ============ -->
+<section class="tab" id="tab-eigen">
+  <h2>🧲 特征值与特征向量（2×2 矩阵）</h2>
+  <p class="desc">输入 2 阶矩阵，工具给出特征多项式推导、特征值（精确根式形式 + 近似值）与对应的特征向量。</p>
+  <textarea id="eigInput" placeholder="例如：&#10;2 1&#10;1 2"></textarea>
+  <div class="row">
+    <button class="btn" onclick="doEigen()">计算</button>
+    <button class="btn ghost sm" onclick="document.getElementById('eigInput').value='2 1\n1 2'">填个例子</button>
+    <span class="muted" id="eigMsg"></span>
+  </div>
+  <div id="eigOut"></div>
+</section>
+<!-- ============ 行变换练习 ============ -->
+<section class="tab" id="tab-rowop">
+  <h2>✍️ 初等行变换逐步检查器</h2>
+  <p class="desc">自己练习做行变换：输入起始矩阵，然后一步一步选择变换操作并填入结果矩阵，工具会检查每一步是否合法、是否正确。</p>
+  <div id="roStart">
+    <textarea id="roInput" placeholder="输入起始矩阵，如：&#10;1 2 1&#10;2 1 -1&#10;1 -1 2"></textarea>
+    <div class="row">
+      <button class="btn" onclick="roBegin()">开始练习</button>
+      <span class="muted" id="roMsg"></span>
+    </div>
+  </div>
+  <div id="roWork" style="display:none">
+    <h3>当前矩阵</h3>
+    <div id="roCurrent"></div>
+    <h3>历史步骤</h3>
+    <div class="steps" id="roHistory"></div>
+    <h3>做下一步变换</h3>
+    <div class="row">
+      <select id="roOp" onchange="roOpHint()">
+        <option value="swap">交换两行</option>
+        <option value="scale">某行乘非零数 k</option>
+        <option value="add">第 i 行加上第 j 行的 k 倍</option>
+      </select>
+      <span class="muted" id="roHint"></span>
+    </div>
+    <div class="row"><span id="roParams"></span></div>
+    <div id="roTargetWrap" style="display:none">
+      <p class="muted">把你算出的新矩阵填在这里：</p>
+      <textarea id="roTarget" style="min-height:70px"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="roCheck()">检查这一步</button>
+      <button class="btn ghost" onclick="roShowAnswer()">我不会，看正确做法</button>
+      <button class="btn ghost" onclick="roReset()">重新开始</button>
+    </div>
+    <div id="roFeedback"></div>
+  </div>
+</section>
+
+<!-- ============ 找错挑战 ============ -->
+<section class="tab" id="tab-finderr">
+  <h2>🔍 找错挑战：这段解法有错，你能找到吗？</h2>
+  <p class="desc">工具生成一道方程组题和一份"某同学"的解题过程，其中<b>恰好有一步是错的</b>。请找出错误发生在第几步。</p>
+  <div class="row"><button class="btn" onclick="feNew()">出一道新题</button></div>
+  <div id="feBody" style="display:none">
+    <h3>题目（增广矩阵）</h3>
+    <div id="feQ"></div>
+    <h3>某同学的解题过程</h3>
+    <div class="steps" id="feSteps"></div>
+    <h3>你的判断</h3>
+    <div class="row">错误发生在第 <input type="number" id="feStepNo" min="1" style="width:70px"> 步</div>
+    <div class="row"><button class="btn" onclick="feCheck()">提交判断</button>
+    <button class="btn ghost sm" onclick="feReveal()">直接看答案</button></div>
+    <div id="feFeedback"></div>
+  </div>
+</section>
+
+<!-- ============ 随机刷题 ============ -->
+<section class="tab" id="tab-quiz">
+  <h2>🎯 随机刷题</h2>
+  <p class="desc">按知识点随机出题，答错会自动记入错题本。</p>
+  <div class="choose" id="quizType">
+    <label><input type="radio" name="qt" value="det" checked>行列式计算</label>
+    <label><input type="radio" name="qt" value="solve">方程组解的判定</label>
+    <label><input type="radio" name="qt" value="rank">矩阵的秩</label>
+    <label><input type="radio" name="qt" value="matmul">矩阵乘法</label>
+  </div>
+  <div class="row"><button class="btn" onclick="quizNew()">开始做题</button></div>
+  <div id="quizBody" style="display:none">
+    <div class="card">
+      <div id="quizQ"></div>
+      <div class="row" id="quizAnsRow">
+        <span id="quizPrompt"></span>
+        <input type="text" id="quizAns" placeholder="你的答案" onkeydown="if(event.key==='Enter')quizCheck()">
+        <button class="btn sm" onclick="quizCheck()">提交</button>
+      </div>
+      <div id="quizSteps" class="steps"></div>
+      <div class="ans-feed" id="quizFeed"></div>
+      <div class="row"><button class="btn ghost sm" onclick="quizNew()">下一题</button></div>
+    </div>
+  </div>
+  <div class="stats" id="quizStats"></div>
+</section>
+
+<!-- ============ 错题本 ============ -->
+<section class="tab" id="tab-wrong">
+  <h2>📒 错题本</h2>
+  <p class="desc">做题和找错挑战中答错的题目会自动保存在本机浏览器中（离线存储，不上传任何数据）。</p>
+  <div class="row">
+    <button class="btn ghost sm" onclick="wqRender()">刷新</button>
+    <button class="btn ghost sm" onclick="wqClear()">清空错题本</button>
+  </div>
+  <div id="wqList"></div>
+</section>
+
+</main>
+
+<script>
+/* ================= 分数运算 ================= */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function Frac(n,d){ if(d===undefined)d=1; if(d<0){n=-n;d=-d;} const g=gcd(n,d); this.n=n/g; this.d=d/g; }
+Frac.prototype.add=function(o){return new Frac(this.n*o.d+o.n*this.d, this.d*o.d);};
+Frac.prototype.sub=function(o){return new Frac(this.n*o.d-o.n*this.d, this.d*o.d);};
+Frac.prototype.mul=function(o){return new Frac(this.n*o.n, this.d*o.d);};
+Frac.prototype.div=function(o){return new Frac(this.n*o.d, this.d*o.n);};
+Frac.prototype.neg=function(){return new Frac(-this.n,this.d);};
+Frac.prototype.isZero=function(){return this.n===0;};
+Frac.prototype.eq=function(o){return this.n===o.n&&this.d===o.d;};
+Frac.prototype.toString=function(){
+  if(this.d===1) return String(this.n);
+  return this.n+"/"+this.d;
+};
+
+/* ================= 矩阵工具 ================= */
+function parseMatrix(text){
+  const lines=text.trim().split(/\n+/).map(l=>l.trim()).filter(Boolean);
+  if(lines.length===0) throw new Error("请输入矩阵");
+  const m=lines.map(l=>l.split(/[\s,，]+/).filter(Boolean).map(tok=>{
+    if(/^-?\d+$/.test(tok)) return new Frac(parseInt(tok));
+    const mm=tok.match(/^(-?\d+)\/(\d+)$/);
+    if(mm) return new Frac(parseInt(mm[1]), parseInt(mm[2]));
+    throw new Error("无法识别的数："+tok);
+  }));
+  const w=m[0].length;
+  if(!m.every(r=>r.length===w)) throw new Error("每行的数个数不一致");
+  return m;
+}
+function cloneM(m){return m.map(r=>r.map(x=>new Frac(x.n,x.d)));}
+function matHTML(m){
+  let s='<table class="matrix">';
+  for(const r of m) s+='<tr>'+r.map(x=>'<td>'+x.toString()+'</td>').join('')+'</tr>';
+  return s+'</table>';
+}
+function matMul(A,B){
+  const m=A.length,k=B.length,n=B[0].length,R=[];
+  for(let i=0;i<m;i++){const r=[];for(let j=0;j<n;j++){
+    let s=new Frac(0);
+    for(let t=0;t<k;t++) s=s.add(A[i][t].mul(B[t][j]));
+    r.push(s);
+  }R.push(r);}
+  return R;
+}
+function transpose(A){ return A[0].map((_,j)=>A.map(r=>r[j])); }
+
+/* ================= 行列式 ================= */
+function determinant(M){
+  const n=M.length;
+  if(n===1) return {v:M[0][0], steps:[]};
+  if(n===2){
+    const v=M[0][0].mul(M[1][1]).sub(M[0][1].mul(M[1][0]));
+    return {v, steps:['二阶行列式：ad − bc = ('+M[0][0]+')·('+M[1][1]+') − ('+M[0][1]+')·('+M[1][0]+') = '+v]};
+  }
+  let steps=[]; let total=new Frac(0);
+  for(let j=0;j<n;j++){
+    const minor=[]; for(let i=1;i<n;i++){const row=[];for(let k=0;k<n;k++) if(k!==j) row.push(M[i][k]); minor.push(row);}
+    const sub=determinant(minor);
+    const sign=j%2===0?1:-1;
+    const term=(sign===1?'':'−')+'('+M[0][j]+')·('+sub.v+')';
+    steps.push('按第 1 行展开，元素 a<sub>1'+(j+1)+'</sub> = '+M[0][j]+'，代数余子式 = '+sub.v+'，贡献项：'+term);
+    for(const s2 of sub.steps) steps.push('&nbsp;&nbsp;└ 子行列式：'+s2);
+    let t=M[0][j].mul(sub.v); if(sign===-1) t=t.neg();
+    total=total.add(t);
+  }
+  return {v:total, steps};
+}
+
+/* ================= 高斯消元（带步骤） ================= */
+function rref(aug){
+  const A=cloneM(aug); const m=A.length, n=A[0].length;
+  const steps=[]; let row=0; const pivots=[];
+  for(let col=0; col<n-1 && row<m; col++){
+    let p=-1;
+    for(let i=row;i<m;i++) if(!A[i][col].isZero()){p=i;break;}
+    if(p===-1) continue;
+    if(p!==row){ [A[p],A[row]]=[A[row],A[p]]; steps.push({desc:'交换 r'+(p+1)+' 与 r'+(row+1), m:cloneM(A)}); }
+    if(!A[row][col].eq(new Frac(1))){
+      const k=new Frac(1).div(A[row][col]);
+      for(let j=col;j<n;j++) A[row][j]=A[row][j].mul(k);
+      steps.push({desc:'r'+(row+1)+' × ('+k+')，把主元化为 1', m:cloneM(A)});
+    }
+    for(let i=0;i<m;i++){
+      if(i===row||A[i][col].isZero()) continue;
+      const k=A[i][col].neg();
+      for(let j=col;j<n;j++) A[i][j]=A[i][j].add(A[row][j].mul(k));
+      steps.push({desc:'r'+(i+1)+' + ('+k+')·r'+(row+1)+'，把该列其他元素消为 0', m:cloneM(A)});
+    }
+    pivots.push({r:row,c:col}); row++;
+  }
+  return {A, steps, pivots};
+}
+
+function solveSystem(aug){
+  const {A, steps, pivots}=rref(aug);
+  const m=A.length, n=A[0].length, cols=n-1;
+  let incons=false;
+  for(let i=0;i<m;i++){
+    let allzero=true; for(let j=0;j<cols;j++) if(!A[i][j].isZero()){allzero=false;break;}
+    if(allzero && !A[i][cols].isZero()) incons=true;
+  }
+  const rank=pivots.length;
+  let type, solution=null;
+  if(incons){ type='无解'; }
+  else if(rank===cols){ type='唯一解';
+    const x=new Array(cols);
+    for(const p of pivots) x[p.c]=A[p.r][cols];
+    for(let j=0;j<cols;j++) if(x[j]===undefined) x[j]=new Frac(0);
+    solution='x = ('+x.map(v=>v.toString()).join(', ')+')';
+  } else { type='无穷多解（自由未知量 '+(cols-rank)+' 个）';
+    const free=[]; const ispiv=new Array(cols).fill(false);
+    for(const p of pivots) ispiv[p.c]=true;
+    for(let j=0;j<cols;j++) if(!ispiv[j]) free.push(j);
+    let s='通解：';
+    const parts=[];
+    for(let j=0;j<cols;j++){
+      if(ispiv[j]){
+        const p=pivots.find(p=>p.c===j);
+        let expr=A[p.r][cols].toString();
+        for(const f of free){ const coef=A[p.r][f].neg(); if(!coef.isZero()) expr += (coef.n<0?' − ':' + ')+coef.neg().toString()+'·x'+(f+1); }
+        parts.push('x'+(j+1)+' = '+expr);
+      }
+    }
+    s+=parts.join('；')+'，其中 '+free.map(f=>'x'+(f+1)).join('、')+' 为自由未知量。';
+    solution=s;
+  }
+  return {A, steps, type, solution, rank};
+}
+
+/* ================= 特征值（2x2） ================= */
+function doEigenCore(A){
+  const a=A[0][0].n/A[0][0].d, b=A[0][1].n/A[0][1].d, c=A[1][0].n/A[1][0].d, d=A[1][1].n/A[1][1].d;
+  const tr=a+d, det=a*d-b*c, disc=tr*tr-4*det;
+  return {a,b,c,d,tr,det,disc};
+}
+</script>
+<script>
+/* ================= 页面切换 / 深色模式 ================= */
+function goToTab(tab){
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===tab));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+tab));
+  if(tab==='wrong') wqRender();
+  if(tab==='quiz') statRender();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  goToTab(b.dataset.tab);
+});
+document.querySelectorAll('.feat').forEach(el=>{
+  el.addEventListener('click',()=>goToTab(el.dataset.tab));
+});
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  const on=document.body.classList.contains('dark');
+  localStorage.setItem('la_tool_dark', on?'1':'0');
+  document.getElementById('darkBtn').textContent=on?'☀️ 浅色模式':'🌙 深色模式';
+}
+if(localStorage.getItem('la_tool_dark')==='1'){
+  document.body.classList.add('dark');
+  document.getElementById('darkBtn').textContent='☀️ 浅色模式';
+}
+
+/* ================= 行列式 ================= */
+function fillDetExample(){document.getElementById('detInput').value='2 1 3\n0 4 1\n1 2 0';}
+function doDet(){
+  const out=document.getElementById('detOut'), msg=document.getElementById('detMsg');
+  out.innerHTML=''; msg.textContent='';
+  let M;
+  try{ M=parseMatrix(document.getElementById('detInput').value); }catch(e){ msg.textContent=e.message; return; }
+  if(M.length!==M[0].length){ msg.textContent='必须是方阵（行数=列数）'; return; }
+  if(M.length>4){ msg.textContent='n ≤ 4'; return; }
+  const {v,steps}=determinant(M);
+  let html='<div class="card"><h3>解题步骤</h3><div class="steps">'+steps.map(s=>'<div class="step">'+s+'</div>').join('')+'</div>';
+  html+='<h3>结果</h3><p class="ok" style="font-size:18px">det = '+v+'</p></div>';
+  out.innerHTML=html;
+}
+
+/* ================= 矩阵运算 ================= */
+function moOpChanged(){
+  const op=document.getElementById('moOp').value;
+  const binary=['add','sub','mul'].includes(op);
+  document.getElementById('moBWrap').style.display=binary?'block':'none';
+  document.getElementById('moKWrap').style.display=op==='scal'?'flex':'none';
+  const hints={add:'A、B 必须同型（行列数相同）',sub:'A、B 必须同型',mul:'A 的列数必须等于 B 的行数',
+    scal:'A 的每个元素乘 k',trans:'行列互换',inv:'仅对方阵；行列式为 0 则不可逆',
+    rank:'化为行最简形，非零行数即秩',trace:'主对角线元素之和（仅方阵）'};
+  document.getElementById('moHint').textContent=hints[op];
+}
+function parseFracStr(s){const mm=s.match(/^(-?\d+)(?:\/(\d+))?$/); if(!mm) throw new Error('格式不对，应为整数或分数'); return new Frac(parseInt(mm[1]), mm[2]?parseInt(mm[2]):1);}
+function doMatOp(){
+  const out=document.getElementById('moOut'), msg=document.getElementById('moMsg');
+  out.innerHTML=''; msg.textContent='';
+  const op=document.getElementById('moOp').value;
+  let A,B;
+  try{
+    A=parseMatrix(document.getElementById('moA').value);
+    if(['add','sub','mul'].includes(op)) B=parseMatrix(document.getElementById('moB').value);
+  }catch(e){ msg.textContent=e.message; return; }
+  try{
+    let html='';
+    if(op==='add'||op==='sub'){
+      if(A.length!==B.length||A[0].length!==B[0].length) throw new Error('A、B 不同型，不能相加减');
+      const R=A.map((r,i)=>r.map((x,j)=>op==='add'?x.add(B[i][j]):x.sub(B[i][j])));
+      html='<h3>结果 A '+(op==='add'?'+':'−')+' B</h3>'+matHTML(R);
+    }else if(op==='mul'){
+      if(A[0].length!==B.length) throw new Error('A 的列数 ≠ B 的行数，不能相乘');
+      const R=matMul(A,B);
+      html='<p class="muted">结果第 (i,j) 元素 = A 第 i 行与 B 第 j 列对应元素乘积之和</p><h3>结果 A × B</h3>'+matHTML(R);
+    }else if(op==='scal'){
+      const k=parseFracStr(document.getElementById('moK').value.trim());
+      const R=A.map(r=>r.map(x=>x.mul(k)));
+      html='<h3>结果 k × A（k = '+k+'）</h3>'+matHTML(R);
+    }else if(op==='trans'){
+      html='<h3>结果 A<sup>T</sup></h3>'+matHTML(transpose(A));
+    }else if(op==='trace'){
+      if(A.length!==A[0].length) throw new Error('只有方阵有迹');
+      let s=new Frac(0); for(let i=0;i<A.length;i++) s=s.add(A[i][i]);
+      html='<h3>tr(A) = '+s+'</h3><p class="muted">= '+A.map((r,i)=>r[i].toString()).join(' + ')+'</p>';
+    }else if(op==='rank'){
+      // 加一列 0 使 rref 遍历所有原列
+      const aug=A.map(r=>r.concat([new Frac(0)]));
+      const {A:R,pivots}=rref(aug);
+      html='<h3>r(A) = '+pivots.length+'</h3><p class="muted">行最简形（最后一列 0 为辅助列）：</p>'+matHTML(R);
+    }else if(op==='inv'){
+      if(A.length!==A[0].length) throw new Error('只有方阵可能可逆');
+      const n=A.length;
+      const det=determinant(A).v;
+      if(det.isZero()){ html='<p class="bad">det(A) = 0，矩阵不可逆（奇异矩阵）。</p>'; }
+      else{
+        const aug=A.map((r,i)=>r.concat(A.map((_,j)=>new Frac(i===j?1:0))));
+        const {A:R}=rref(aug);
+        const inv=R.map(r=>r.slice(n));
+        html='<h3>det(A) = '+det+' ≠ 0，可逆</h3><h3>A<sup>−1</sup>（对 [A | I] 做高斯—若尔当消元得到 [I | A<sup>−1</sup>]）</h3>'+matHTML(inv);
+      }
+    }
+    out.innerHTML='<div class="card">'+html+'</div>';
+  }catch(e){ msg.textContent=e.message; }
+}
+moOpChanged();
+
+/* ================= 方程组 ================= */
+function fillSolveExample(){document.getElementById('solveInput').value='1 2 1 8\n2 1 -1 1\n1 -1 2 7';}
+function doSolve(){
+  const out=document.getElementById('solveOut'), msg=document.getElementById('solveMsg');
+  out.innerHTML=''; msg.textContent='';
+  let M;
+  try{ M=parseMatrix(document.getElementById('solveInput').value); }catch(e){ msg.textContent=e.message; return; }
+  if(M.length+1>M[0].length){ msg.textContent='增广矩阵列数应 = 未知量个数 + 1'; return; }
+  const r=solveSystem(M);
+  let html='<div class="card"><h3>行变换过程（化到行最简形）</h3><div class="steps">'+
+    r.steps.map(s=>'<div class="step">'+s.desc+'<div class="mline">'+matHTML(s.m)+'</div></div>').join('')+
+    (r.steps.length===0?'<p class="muted">已经是行最简形，无需变换。</p>':'')+'</div>';
+  html+='<h3>结论</h3><p>系数矩阵的秩 = '+r.rank+'，<span class="ok">'+r.type+'</span></p>';
+  if(r.solution) html+='<p>'+r.solution+'</p>';
+  html+='<h3>行最简形</h3>'+matHTML(r.A)+'</div>';
+  out.innerHTML=html;
+}
+
+/* ================= 特征值 ================= */
+function fmtNum(x){ return Math.abs(x)<1e-12?'0':(Math.round(x*10000)/10000).toString(); }
+function sqrtStr(x){
+  if(x<0) return null;
+  const s=Math.sqrt(x);
+  if(Math.abs(s-Math.round(s))<1e-9) return String(Math.round(s));
+  return '√'+fmtNum(x);
+}
+function doEigen(){
+  const out=document.getElementById('eigOut'), msg=document.getElementById('eigMsg');
+  out.innerHTML=''; msg.textContent='';
+  let A;
+  try{ A=parseMatrix(document.getElementById('eigInput').value); }catch(e){ msg.textContent=e.message; return; }
+  if(A.length!==2||A[0].length!==2){ msg.textContent='请输入 2×2 矩阵'; return; }
+  const {a,b,c,d,tr,det,disc}=doEigenCore(A);
+  let html='<div class="card"><h3>第一步：写出特征多项式</h3>';
+  html+='<div class="step">特征方程 det(λI − A) = 0，对 2 阶矩阵即 λ² − tr(A)·λ + det(A) = 0</div>';
+  html+='<div class="step">tr(A) = '+fmtNum(a)+' + '+fmtNum(d)+' = '+fmtNum(tr)+'；det(A) = ('+fmtNum(a)+')·('+fmtNum(d)+') − ('+fmtNum(b)+')·('+fmtNum(c)+') = '+fmtNum(det)+'</div>';
+  html+='<div class="step">特征方程：λ² − ('+fmtNum(tr)+')λ + ('+fmtNum(det)+') = 0</div>';
+  html+='<h3>第二步：求特征值</h3>';
+  html+='<div class="step">判别式 Δ = tr(A)² − 4·det(A) = '+fmtNum(disc)+'</div>';
+  if(disc<0){
+    const re=tr/2, im=Math.sqrt(-disc)/2;
+    html+='<div class="step">Δ &lt; 0，<b>无实特征值</b>。复特征值：λ = '+fmtNum(re)+' ± '+fmtNum(im)+'i</div>';
+    html+='<p class="muted">该矩阵在实数域上不可对角化（例如旋转矩阵就没有实特征值）。</p>';
+  }else{
+    const s=Math.sqrt(disc);
+    const l1=(tr+s)/2, l2=(tr-s)/2;
+    const ss=sqrtStr(disc);
+    html+='<div class="step">λ = [tr(A) ± √Δ] / 2 = ['+fmtNum(tr)+' ± '+ss+'] / 2</div>';
+    if(disc===0){
+      html+='<div class="step">Δ = 0，二重特征值：<b>λ = '+fmtNum(l1)+'</b></div>';
+    }else{
+      html+='<div class="step">特征值：<b>λ₁ = '+fmtNum(l1)+'</b>，<b>λ₂ = '+fmtNum(l2)+'</b>（近似值）</div>';
+    }
+    html+='<h3>第三步：求特征向量</h3>';
+    const lambdas=disc===0?[l1]:[l1,l2];
+    lambdas.forEach((lam,idx)=>{
+      let vx,vy;
+      if(Math.abs(b)>1e-9){ vx=b; vy=lam-a; }
+      else if(Math.abs(c)>1e-9){ vx=lam-d; vy=c; }
+      else{ // 对角矩阵
+        if(Math.abs(a-lam)<1e-9 && Math.abs(d-lam)<1e-9){ vx=1; vy=0; }
+        else if(Math.abs(a-lam)<1e-9){ vx=1; vy=0; }
+        else { vx=0; vy=1; }
+      }
+      const norm=Math.hypot(vx,vy)||1;
+      html+='<div class="step">对 λ = '+fmtNum(lam)+'，解 (A − λI)v = 0，可取特征向量 v = ('+fmtNum(vx)+', '+fmtNum(vy)+')<sup>T</sup>'
+        +'；单位化后约为 ('+fmtNum(vx/norm)+', '+fmtNum(vy/norm)+')<sup>T</sup>（任意非零倍数都是特征向量）</div>';
+    });
+  }
+  html+='</div>';
+  out.innerHTML=html;
+}
+
+/* ================= 行变换练习 ================= */
+let roMat=null, roSize=null;
+function roBegin(){
+  const msg=document.getElementById('roMsg'); msg.textContent='';
+  try{
+    roMat=parseMatrix(document.getElementById('roInput').value);
+    roSize={r:roMat.length, c:roMat[0].length};
+  }catch(e){ msg.textContent=e.message; return; }
+  document.getElementById('roStart').style.display='none';
+  document.getElementById('roWork').style.display='block';
+  document.getElementById('roHistory').innerHTML='';
+  document.getElementById('roFeedback').innerHTML='';
+  roRender();
+  roOpHint();
+}
+function roReset(){
+  roMat=null;
+  document.getElementById('roStart').style.display='block';
+  document.getElementById('roWork').style.display='none';
+}
+function roRender(){ document.getElementById('roCurrent').innerHTML=matHTML(roMat); }
+function roOpHint(){
+  const op=document.getElementById('roOp').value, P=document.getElementById('roParams');
+  const opts=()=>{let s='';for(let i=1;i<=roSize.r;i++) s+='<option value="'+i+'">r'+i+'</option>';return s;};
+  if(op==='swap'){ P.innerHTML='交换 <select id="roA">'+opts()+'</select> 与 <select id="roB">'+opts()+'</select>'; document.getElementById('roHint').textContent='两行互换位置'; }
+  else if(op==='scale'){ P.innerHTML='<select id="roA">'+opts()+'</select> × k = <input type="text" id="roK" size="6" placeholder="如 2 或 1/3">'; document.getElementById('roHint').textContent='某一行所有元素同乘一个非零数'; }
+  else { P.innerHTML='<select id="roA">'+opts()+'</select> + k·<select id="roB">'+opts()+'</select>，k = <input type="text" id="roK" size="6" placeholder="如 -2 或 1/2">'; document.getElementById('roHint').textContent='把第 j 行的 k 倍加到第 i 行'; }
+  document.getElementById('roTargetWrap').style.display='block';
+}
+function roApply(A,op,a,b,k){
+  const R=cloneM(A); const n=R[0].length;
+  if(op==='swap'){ if(a===b) throw new Error('交换的两行不能相同'); [R[a],R[b]]=[R[b],R[a]]; }
+  else if(op==='scale'){ if(k.isZero()) throw new Error('k 不能为 0（初等变换要求乘非零数）'); for(let j=0;j<n;j++) R[a][j]=R[a][j].mul(k); }
+  else { if(a===b) throw new Error('请选择两行不同的行'); for(let j=0;j<n;j++) R[a][j]=R[a][j].add(R[b][j].mul(k)); }
+  return R;
+}
+function roCheck(){
+  const fb=document.getElementById('roFeedback'); fb.innerHTML='';
+  const op=document.getElementById('roOp').value;
+  const a=parseInt(document.getElementById('roA').value)-1;
+  const b=document.getElementById('roB')?parseInt(document.getElementById('roB').value)-1:null;
+  let k=null, expected;
+  try{
+    if(op!=='swap') k=parseFracStr(document.getElementById('roK').value.trim());
+    expected=roApply(roMat,op,a,b,k);
+  }catch(e){ fb.innerHTML='<p class="bad">'+e.message+'</p>'; return; }
+  let user;
+  try{ user=parseMatrix(document.getElementById('roTarget').value); }catch(e){ fb.innerHTML='<p class="bad">结果矩阵格式有误：'+e.message+'</p>'; return; }
+  if(user.length!==roSize.r||user[0].length!==roSize.c){ fb.innerHTML='<p class="bad">结果矩阵大小不对，应为 '+roSize.r+'×'+roSize.c+'</p>'; return; }
+  let wrong=[];
+  for(let i=0;i<roSize.r;i++)for(let j=0;j<roSize.c;j++) if(!user[i][j].eq(expected[i][j])) wrong.push('第'+(i+1)+'行第'+(j+1)+'列应为 '+expected[i][j]);
+  const desc=op==='swap'?('交换 r'+(a+1)+' 与 r'+(b+1)):op==='scale'?('r'+(a+1)+' × '+k):('r'+(a+1)+' + ('+k+')·r'+(b+1));
+  if(wrong.length===0){
+    fb.innerHTML='<p class="ok">✓ 正确！这一步做对了。</p>';
+    document.getElementById('roHistory').innerHTML+='<div class="step">'+desc+'<div class="mline">'+matHTML(expected)+'</div></div>';
+    roMat=expected; roRender();
+    document.getElementById('roTarget').value='';
+  }else{
+    fb.innerHTML='<p class="bad">✗ 不对哦：'+wrong.slice(0,3).join('；')+(wrong.length>3?' 等':'')+'。共 '+wrong.length+' 个位置不对，再检查一下。</p>';
+  }
+}
+function roShowAnswer(){
+  const {A, steps}=rref(roMat);
+  document.getElementById('roFeedback').innerHTML='<div class="card"><h3>从当前矩阵化到行最简形的完整做法</h3><div class="steps">'+
+    steps.map(s=>'<div class="step">'+s.desc+'<div class="mline">'+matHTML(s.m)+'</div></div>').join('')+
+    (steps.length===0?'<p class="muted">当前矩阵已经是行最简形。</p>':'')+'</div><h3>行最简形</h3>'+matHTML(A)+'</div>';
+}
+</script>
+<script>
+/* ================= 找错挑战 ================= */
+let feData=null;
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function feNew(){
+  let x=new Frac(randInt(-3,3)), y=new Frac(randInt(-3,3)), z=new Frac(randInt(-2,2));
+  const rows=[];
+  for(let i=0;i<3;i++){
+    let a=randInt(-4,4),b=randInt(-4,4),c=randInt(-3,3);
+    if(a===0&&b===0&&c===0) a=1;
+    const d=a*x.n+b*y.n+c*z.n;
+    rows.push([new Frac(a),new Frac(b),new Frac(c),new Frac(d)]);
+  }
+  const {steps}=rref(rows);
+  if(steps.length<2){ feNew(); return; }
+  const errIdx=randInt(0,steps.length-1);
+  const wrong=cloneM(steps[errIdx].m);
+  const wi=randInt(0,wrong.length-1), wj=randInt(0,wrong[0].length-1);
+  wrong[wi][wj]=wrong[wi][wj].add(new Frac(randInt(1,3)));
+  feData={q:rows, steps, errIdx, wrong};
+  document.getElementById('feBody').style.display='block';
+  document.getElementById('feQ').innerHTML=matHTML(rows);
+  document.getElementById('feStepNo').value='';
+  document.getElementById('feFeedback').innerHTML='';
+  let h='';
+  steps.forEach((s,i)=>{
+    const m=(i===errIdx)?wrong:s.m;
+    h+='<div class="step"><b>第 '+(i+1)+' 步：</b>'+s.desc+'<div class="mline">'+matHTML(m)+'</div></div>';
+  });
+  h+='<div class="step"><b>最终结果：</b>'+matHTML(steps[steps.length-1].m)+'</div>';
+  document.getElementById('feSteps').innerHTML=h;
+}
+function feCheck(){
+  const fb=document.getElementById('feFeedback');
+  const guess=parseInt(document.getElementById('feStepNo').value);
+  if(isNaN(guess)){ fb.innerHTML='<p class="bad">先填一个步骤编号</p>'; return; }
+  if(guess-1===feData.errIdx){
+    fb.innerHTML='<p class="ok">✓ 找对了！第 '+guess+' 步「'+feData.steps[feData.errIdx].desc+'」算错了。</p>';
+  }else{
+    fb.innerHTML='<p class="bad">✗ 不是第 '+guess+' 步，再看看后面的步骤哪里对不上。</p>';
+    wqAdd('找错挑战', '找出下述解题过程中的错误步骤：', feData.q.map(r=>r.join(' ')).join('\n'));
+  }
+}
+function feReveal(){
+  const fb=document.getElementById('feFeedback');
+  fb.innerHTML='<p class="ok">答案：第 '+(feData.errIdx+1)+' 步错了。正确结果应为：</p>'+matHTML(feData.steps[feData.errIdx].m);
+}
+
+/* ================= 随机刷题 ================= */
+let quizData=null;
+function quizNew(){
+  const t=document.querySelector('#quizType input:checked').value;
+  document.getElementById('quizFeed').className='ans-feed'; document.getElementById('quizFeed').textContent='';
+  document.getElementById('quizSteps').innerHTML='';
+  document.getElementById('quizAns').value='';
+  document.getElementById('quizAns').placeholder='你的答案';
+  document.getElementById('quizBody').style.display='block';
+  if(t==='det'){
+    const n=Math.random()<0.5?2:3;
+    const M=[]; for(let i=0;i<n;i++){const r=[];for(let j=0;j<n;j++)r.push(new Frac(randInt(-5,5)));M.push(r);}
+    const {v}=determinant(M);
+    quizData={type:'det', q:M, ans:v.toString()};
+    document.getElementById('quizQ').innerHTML='<p><span class="pill">行列式</span>计算下面矩阵的行列式：</p>'+matHTML(M);
+    document.getElementById('quizPrompt').textContent='det =';
+  }else if(t==='solve'){
+    const x=new Frac(randInt(-3,3)), y=new Frac(randInt(-3,3));
+    const rows=[];
+    for(let i=0;i<2;i++){let a=randInt(-4,4),b=randInt(-4,4); if(a===0&&b===0)a=1; rows.push([new Frac(a),new Frac(b),new Frac(a*x.n+b*y.n)]);}
+    const r=solveSystem(rows);
+    quizData={type:'solve', q:rows, ans:r};
+    document.getElementById('quizQ').innerHTML='<p><span class="pill">方程组</span>判断解的情况（唯一解 / 无解 / 无穷多解）。增广矩阵：</p>'+matHTML(rows);
+    document.getElementById('quizPrompt').textContent='答案：';
+    document.getElementById('quizAns').placeholder='唯一解 / 无解 / 无穷多解';
+  }else if(t==='rank'){
+    // 3x3 随机矩阵，一半概率让第 3 行 = 第 1 行 + 第 2 行（秩≤2）
+    const M=[]; for(let i=0;i<2;i++){const r=[];for(let j=0;j<3;j++)r.push(new Frac(randInt(-4,4)));M.push(r);}
+    let r3;
+    if(Math.random()<0.5){ r3=M[0].map((x,j)=>x.add(M[1][j])); }
+    else { r3=[0,0,0].map(()=>new Frac(randInt(-4,4))); }
+    M.push(r3);
+    const aug=M.map(r=>r.concat([new Frac(0)]));
+    const {A:R,pivots}=rref(aug);
+    quizData={type:'rank', q:M, ans:String(pivots.length), rref:R};
+    document.getElementById('quizQ').innerHTML='<p><span class="pill">矩阵的秩</span>求下面矩阵的秩：</p>'+matHTML(M);
+    document.getElementById('quizPrompt').textContent='r(A) =';
+  }else{ // matmul
+    const A=[[randInt(-4,4),randInt(-4,4)],[randInt(-4,4),randInt(-4,4)]].map(r=>r.map(v=>new Frac(v)));
+    const B=[[randInt(-4,4),randInt(-4,4)],[randInt(-4,4),randInt(-4,4)]].map(r=>r.map(v=>new Frac(v)));
+    const R=matMul(A,B);
+    quizData={type:'matmul', q:{A,B}, ans:R[0][0].toString(), R};
+    document.getElementById('quizQ').innerHTML='<p><span class="pill">矩阵乘法</span>计算 A × B，回答结果矩阵第 1 行第 1 列的元素：</p>'
+      +matHTML(A)+' × '+matHTML(B);
+    document.getElementById('quizPrompt').textContent='(A×B)₁₁ =';
+  }
+  statRender();
+}
+function statLoad(){ try{ return JSON.parse(localStorage.getItem('la_tool_stats'))||{a:0,c:0}; }catch(e){ return {a:0,c:0}; } }
+function statSave(s){ localStorage.setItem('la_tool_stats',JSON.stringify(s)); }
+function statRender(){
+  const s=statLoad();
+  const rate=s.a?Math.round(s.c/s.a*100):0;
+  document.getElementById('quizStats').innerHTML=
+    '<div class="stat"><b>'+s.a+'</b><span>累计做题</span></div>'+
+    '<div class="stat"><b>'+s.c+'</b><span>答对题数</span></div>'+
+    '<div class="stat"><b>'+rate+'%</b><span>正确率</span></div>';
+}
+function quizCheck(){
+  const fb=document.getElementById('quizFeed');
+  const u=document.getElementById('quizAns').value.trim();
+  const st=statLoad(); st.a++;
+  let ok=false;
+  if(quizData.type==='det'||quizData.type==='matmul'){
+    let uf; try{ uf=parseFracStr(u); }catch(e){ fb.className='ans-feed bad'; fb.textContent='答案格式不对，填一个数（可带分数，如 -3/2）'; return; }
+    ok=uf.eq(parseFracStr(quizData.ans));
+    if(ok){ fb.className='ans-feed ok'; fb.textContent='✓ 正确！'; }
+    else{
+      fb.className='ans-feed bad';
+      if(quizData.type==='det'){
+        fb.textContent='✗ 不正确，正确答案是 '+quizData.ans;
+        const {steps}=determinant(quizData.q);
+        document.getElementById('quizSteps').innerHTML='<h3>参考步骤</h3>'+steps.map(s=>'<div class="step">'+s+'</div>').join('');
+        wqAdd('行列式计算','计算行列式：',quizData.q.map(r=>r.join(' ')).join('\n')+'\n答案：'+quizData.ans);
+      }else{
+        fb.textContent='✗ 不正确，正确答案是 '+quizData.ans;
+        document.getElementById('quizSteps').innerHTML='<h3>完整结果 A × B</h3><div class="step">'+matHTML(quizData.R)+'</div>';
+        wqAdd('矩阵乘法','计算 A×B 的 (1,1) 元素：\nA =\n'+quizData.q.A.map(r=>r.join(' ')).join('\n')+'\nB =\n'+quizData.q.B.map(r=>r.join(' ')).join('\n'),'答案：'+quizData.ans);
+      }
+    }
+  }else if(quizData.type==='rank'){
+    ok=(u===quizData.ans);
+    if(ok){ fb.className='ans-feed ok'; fb.textContent='✓ 正确！秩为 '+quizData.ans; }
+    else{
+      fb.className='ans-feed bad'; fb.textContent='✗ 不正确，秩为 '+quizData.ans;
+      document.getElementById('quizSteps').innerHTML='<h3>行最简形（非零行数即秩）</h3><div class="step">'+matHTML(quizData.rref)+'</div>';
+      wqAdd('矩阵的秩','求矩阵的秩：',quizData.q.map(r=>r.join(' ')).join('\n')+'\n答案：'+quizData.ans);
+    }
+  }else{ // solve
+    ok=(u===quizData.ans.type)||(quizData.ans.type.indexOf(u)===0&&u.length>=2)||(u.indexOf(quizData.ans.type)===0&&quizData.ans.type.length>=2);
+    if(ok){ fb.className='ans-feed ok'; fb.textContent='✓ 正确！该方程组'+quizData.ans.type+'。'; if(quizData.ans.solution) fb.textContent+=' '+quizData.ans.solution; }
+    else{
+      fb.className='ans-feed bad'; fb.textContent='✗ 不正确。该方程组'+quizData.ans.type+'。';
+      document.getElementById('quizSteps').innerHTML='<h3>行最简形</h3><div class="step">'+matHTML(quizData.ans.A)+'</div>';
+      wqAdd('方程组判定','判断解的情况：',quizData.q.map(r=>r.join(' ')).join('\n')+'\n答案：'+quizData.ans.type);
+    }
+  }
+  if(ok) st.c++;
+  statSave(st); statRender(); wqRenderCount();
+}
+
+/* ================= 错题本 ================= */
+const WQ_KEY='la_tool_wrongbook';
+function wqLoad(){ try{ return JSON.parse(localStorage.getItem(WQ_KEY))||[]; }catch(e){ return []; } }
+function wqSave(l){ localStorage.setItem(WQ_KEY, JSON.stringify(l)); }
+function wqAdd(type, prompt, content){
+  const l=wqLoad();
+  l.unshift({time:new Date().toLocaleString(), type, prompt, content});
+  wqSave(l); wqRenderCount();
+}
+function wqRenderCount(){
+  const n=wqLoad().length;
+  document.getElementById('wqCount').textContent=n?('('+n+')'):'';
+}
+function wqRender(){
+  const l=wqLoad(), box=document.getElementById('wqList');
+  wqRenderCount();
+  if(l.length===0){ box.innerHTML='<p class="muted">暂无错题，去「随机刷题」做几题吧。</p>'; return; }
+  box.innerHTML=l.map((it,i)=>
+    '<div class="wq-item"><span class="pill">'+it.type+'</span><span class="muted">'+it.time+'</span>'+
+    '<p style="margin:6px 0">'+it.prompt+'</p>'+
+    '<pre style="background:var(--pri-soft);padding:8px;border-radius:6px;font-size:13px;white-space:pre-wrap">'+it.content+'</pre>'+
+    '<button class="btn ghost sm" onclick="wqDel('+i+')">删除</button></div>').join('');
+}
+function wqDel(i){ const l=wqLoad(); l.splice(i,1); wqSave(l); wqRender(); }
+function wqClear(){ if(confirm('确定清空错题本？')){ wqSave([]); wqRender(); } }
+
+wqRenderCount(); statRender();
+</script>
+</body>
+</html>
